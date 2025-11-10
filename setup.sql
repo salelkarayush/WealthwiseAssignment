@@ -67,7 +67,7 @@ INSERT INTO users (name, email, hashed_password)
 VALUES
 ('user1', 'user1@example.com', 'hashed_pw_u1'),
 ('Test User', 'test@example.com', 'hashed_pw_test');
-
+--NOTE: Passwords are placeholders; Create users in testing through endpoints.
 -- INSTRUMENTS
 INSERT INTO instruments (symbol, name, category)
 VALUES
