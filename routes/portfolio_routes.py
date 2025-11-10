@@ -1,64 +1,110 @@
-from fastapi import APIRouter, Depends
+from fastapi import APIRouter, Depends, HTTPException
 from sqlalchemy.orm import Session
 from db.database import get_db
 from db.models import User, Holding
-from db.schemas import PortfolioSummary, HoldingSummary
 from core.security import get_current_user
-import json
 from core.price_utils import load_prices as load_local_prices
 
 router = APIRouter(prefix="/portfolio", tags=["Portfolio"])
 
 
-@router.get("/", response_model=PortfolioSummary)
+@router.get("/")
 def get_portfolio_summary(
     db: Session = Depends(get_db),
     current_user: User = Depends(get_current_user),
 ):
-    """Get portfolio summary for current user, including weighted average cost and profit/loss per instrument."""
+    """
+    Get simplified portfolio summary for the current user.
+    Returns each holding with symbol, units, average cost, current price, and unrealized P/L.
+    """
     holdings = db.query(Holding).filter(Holding.user_id == current_user.id).all()
     prices_data = load_local_prices()
 
-    total_value = total_cost = total_returns = 0.0
-    holding_summaries = []
+    total_value = 0.0
+    total_gain = 0.0
+    holding_list = []
 
     for holding in holdings:
         symbol = holding.instrument.symbol
-        name = holding.instrument.name
-
         total_units = float(holding.total_units or 0)
         avg_cost = float(holding.average_cost or 0)
-        latest_price = prices_data.get(symbol)
+        current_price = prices_data.get(symbol)
 
-        if latest_price is None or total_units == 0:
+        # Skip invalid holdings
+        if current_price is None or total_units == 0:
             continue
 
-        latest_price = float(latest_price)
+        current_price = float(current_price)
+        current_value = total_units * current_price
+        invested_value = total_units * avg_cost
+        unrealized_pl = current_value - invested_value
 
-        current_value = total_units * latest_price
-        total_invested = total_units * avg_cost
-        profit_loss = current_value - total_invested
-
-        total_cost += total_invested
         total_value += current_value
-        total_returns += profit_loss
+        total_gain += unrealized_pl
 
-        holding_summaries.append(
-            HoldingSummary(
-                symbol=symbol,
-                name=name,
-                total_units=round(total_units, 4),
-                average_cost=round(avg_cost, 2),
-                current_price=round(latest_price, 2),
-                total_invested=round(total_invested, 2),
-                current_value=round(current_value, 2),
-                profit_loss=round(profit_loss, 2),
-            )
-        )
+        holding_list.append({
+            "symbol": symbol,
+            "units": round(total_units, 4),
+            "avg_cost": round(avg_cost, 2),
+            "current_price": round(current_price, 2),
+            "unrealized_pl": round(unrealized_pl, 2)
+        })
 
-    return PortfolioSummary(
-        total_value=round(total_value, 2),
-        total_cost=round(total_cost, 2),
-        total_returns=round(total_returns, 2),
-        holdings=holding_summaries,
-    )
+    return {
+        "user_id": current_user.id,
+        "holdings": holding_list,
+        "total_value": round(total_value, 2),
+        "total_gain": round(total_gain, 2)
+    }
+
+
+@router.get("/user/{user_id}")
+def get_portfolio_summary_by_user_id(
+    user_id: int,
+    db: Session = Depends(get_db),
+):
+    """
+    Get simplified portfolio summary for a specific user (no JWT required).
+    """
+    user = db.query(User).filter(User.id == user_id).first()
+    if not user:
+        raise HTTPException(status_code=404, detail="User not found")
+
+    holdings = db.query(Holding).filter(Holding.user_id == user_id).all()
+    prices_data = load_local_prices()
+
+    total_value = 0.0
+    total_gain = 0.0
+    holding_list = []
+
+    for holding in holdings:
+        symbol = holding.instrument.symbol
+        total_units = float(holding.total_units or 0)
+        avg_cost = float(holding.average_cost or 0)
+        current_price = prices_data.get(symbol)
+
+        if current_price is None or total_units == 0:
+            continue
+
+        current_price = float(current_price)
+        current_value = total_units * current_price
+        invested_value = total_units * avg_cost
+        unrealized_pl = current_value - invested_value
+
+        total_value += current_value
+        total_gain += unrealized_pl
+
+        holding_list.append({
+            "symbol": symbol,
+            "units": round(total_units, 4),
+            "avg_cost": round(avg_cost, 2),
+            "current_price": round(current_price, 2),
+            "unrealized_pl": round(unrealized_pl, 2)
+        })
+
+    return {
+        "user_id": user_id,
+        "holdings": holding_list,
+        "total_value": round(total_value, 2),
+        "total_gain": round(total_gain, 2)
+    }
