@@ -90,6 +90,7 @@ CREATE DATABASE wealthnest;
 uv run main.py
 ```
 
+
 ### API will be live at
 ```bash
 The API will be live at:
@@ -102,3 +103,4 @@ Alternative Docs:
 👉 http://127.0.0.1:8000/redoc
 ```
 
+NOTE: Create some instruments with same symbol as in data/prices.json and then you can use other endpoints like /transactions and  /portfolio 
