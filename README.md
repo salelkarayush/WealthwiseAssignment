@@ -85,6 +85,11 @@ JWT_SECRET_KEY="your_jwt_secret_key"
 CREATE DATABASE wealthnest;
 ```
 
+### Run the setup script for database setup with sample data
+```bash
+psql -U postgres -d wealthnest -f setup.sql
+```
+
 ## To run the Application
 ```bash
 uv run main.py
@@ -102,5 +107,3 @@ Interactive API Docs:
 Alternative Docs:
 👉 http://127.0.0.1:8000/redoc
 ```
-
-NOTE: Create some instruments with same symbol as in data/prices.json and then you can use other endpoints like /transactions and  /portfolio 
