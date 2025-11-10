@@ -65,7 +65,7 @@ CREATE TABLE holdings (
 -- USERS
 INSERT INTO users (name, email, hashed_password)
 VALUES
-('Ayush', 'ayush@example.com', 'hashed_pw_ayush'),
+('user1', 'user1@example.com', 'hashed_pw_u1'),
 ('Test User', 'test@example.com', 'hashed_pw_test');
 
 -- INSTRUMENTS
@@ -91,9 +91,9 @@ VALUES
 -- HOLDINGS (reflecting total position)
 INSERT INTO holdings (user_id, instrument_id, total_units, average_cost)
 VALUES
-(1, 1, 5.0, 3200.00),   -- Ayush - TCS
-(1, 2, 10.0, 1450.00),  -- Ayush - INFY
-(1, 4, 8.0, 2300.00),   -- Ayush - RELIANCE
+(1, 1, 5.0, 3200.00),   -- user1 - TCS
+(1, 2, 10.0, 1450.00),  -- user1 - INFY
+(1, 4, 8.0, 2300.00),   -- user1 - RELIANCE
 (2, 3, 12.0, 1650.00),  -- TestUser - HDFCBANK
 (2, 5, 15.0, 420.00),   -- TestUser - ITC
 (2, 6, 20.0, 630.00);   -- TestUser - SBIN
