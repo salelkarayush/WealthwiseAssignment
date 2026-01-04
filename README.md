@@ -1,6 +1,6 @@
-# 💰 WealthNest — Investment Portfolio Tracker
+# 💰 WealthWise — Investment Portfolio Tracker
 
-WealthNest is a **FastAPI-based backend system** that allows users to manage their investment portfolios, record buy/sell transactions, and track holdings with **weighted average cost**, **profit/loss calculation**, and **JWT-based authentication**.
+WealthWise is a **FastAPI-based backend system** that allows users to manage their investment portfolios, record buy/sell transactions, and track holdings with **weighted average cost**, **profit/loss calculation**, and **JWT-based authentication**.
 
 ---
 
